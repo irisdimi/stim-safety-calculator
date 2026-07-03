@@ -1,0 +1,164 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{float}
+
+\begin{document}
+
+\title{A Computational Tool for Neural Stimulation Safety Analysis: Strength-Duration and Charge Density Evaluation}
+
+\author{
+\IEEEauthorblockN{Aya Banna}
+\IEEEauthorblockA{Biomedical Engineering \\
+University of Sydney}
+}
+
+\maketitle
+
+\begin{abstract}
+Electrical stimulation of neural tissue, used in applications ranging from cochlear implants to deep brain and spinal cord stimulators, must deliver sufficient charge to excite target neurons while remaining below thresholds associated with tissue damage. This report presents a computational tool that evaluates stimulation safety by combining two established models: the Weiss/Lapicque strength-duration relationship, which determines the minimum current required to excite tissue for a given pulse duration, and the Shannon (1992) charge density safety model, which bounds the maximum charge deliverable through an electrode of a given area. The tool computes threshold current, threshold charge, charge density, and a Shannon $k$-value for a user-specified stimulation configuration, returning a safe/unsafe verdict. For a representative cochlear-implant-scale electrode configuration (200\,$\mu$s pulse duration, 0.5\,mA rheobase, 150\,$\mu$s chronaxie, 0.01\,cm\textsuperscript{2} electrode area), the tool computes a Shannon $k$-value of 0.486, well within the conservative 1.5 safety limit. The tool is implemented as both a scriptable Python package and an interactive calculator, intended as an educational and design-verification aid.
+\end{abstract}
+
+\begin{IEEEkeywords}
+neural stimulation, strength-duration curve, charge density, tissue safety, Shannon model, bioelectronics
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Electrical neural stimulation underlies a broad class of neuroprosthetic and therapeutic devices, including cochlear implants, deep brain stimulators, and spinal cord stimulators for chronic pain management. A central design constraint in all such devices is delivering sufficient electrical charge to reliably excite target neural tissue while remaining below the charge density threshold associated with irreversible tissue damage \cite{shannon1992}. This constraint requires jointly considering two distinct physiological relationships: the current-duration tradeoff governing neural excitation, and the charge-density tradeoff governing tissue safety.
+
+In practice, electrode and pulse parameters are frequently selected under competing pressures: smaller electrodes improve spatial selectivity and reduce power consumption, but concentrate charge into a smaller area and therefore increase charge density for a given delivered charge; shorter pulses reduce total energy per stimulus and allow higher stimulation rates, but require disproportionately larger currents to reach threshold. Evaluating whether a proposed configuration is simultaneously effective and safe therefore requires jointly solving the strength-duration and charge-density relationships, rather than treating excitability and safety as independent design considerations.
+
+This project implements a computational tool that combines both relationships into a single evaluation pipeline, allowing a stimulation configuration (pulse duration, electrode area, and tissue excitability parameters) to be assessed for both efficacy (will it excite the tissue) and safety (will it damage the tissue) in a single calculation. Beyond evaluating a single fixed configuration, the tool also supports sensitivity analysis across a parameter (Section~\ref{sec:sensitivity}), illustrating how safety margin degrades as electrode area is reduced -- a design tradeoff of direct relevance to miniaturised or high-density electrode arrays. The tool was developed as an applied companion to coursework covering the Weiss/Lapicque and Shannon models, translating the underlying equations into a reusable, verifiable software artifact suitable both as a learning aid and as a first-pass design-verification check.
+
+\section{Background and Methods}
+
+\subsection{Strength-Duration Relationship}
+
+The Weiss/Lapicque model describes the minimum current required to excite neural tissue as a function of stimulus pulse duration \cite{weiss1901,lapicque1907}:
+\begin{equation}
+I_{th}(d) = I_{rh}\left(1 + \frac{\tau_c}{d}\right)
+\label{eq:strength-duration}
+\end{equation}
+where $I_{th}(d)$ is the threshold current for a pulse of duration $d$, $I_{rh}$ is the rheobase (the asymptotic minimum current for an infinitely long pulse), and $\tau_c$ is the chronaxie, defined as the pulse duration at which $I_{th} = 2I_{rh}$. Short pulses require disproportionately higher current, while long pulses approach the rheobase floor.
+
+The corresponding threshold charge per phase follows directly:
+\begin{equation}
+Q_{th}(d) = I_{th}(d) \cdot d = I_{rh}(d + \tau_c)
+\label{eq:threshold-charge}
+\end{equation}
+
+\subsection{Shannon Safety Model}
+
+Shannon's empirical safety model \cite{shannon1992}, derived from cortical stimulation damage studies, relates charge per phase to charge density via:
+\begin{equation}
+\log_{10}(D) = k - \log_{10}(Q)
+\label{eq:shannon}
+\end{equation}
+where $D$ is charge density ($\mu$C/cm\textsuperscript{2}), $Q$ is charge per phase ($\mu$C), and $k$ is an empirically determined safety constant. Values of $k \approx 1.85$ correspond to the originally reported damage threshold in animal cortical stimulation studies, while more conservative values (e.g., $k \approx 1.5$) are commonly adopted in clinical practice to provide a safety margin. Equivalently, a stimulation configuration is evaluated by computing:
+\begin{equation}
+k_{actual} = \log_{10}(D) + \log_{10}(Q)
+\end{equation}
+and comparing $k_{actual}$ against a chosen safety limit; configurations with $k_{actual}$ below the limit fall within the safe region.
+
+The Shannon model's practical significance lies in the fact that charge alone is an incomplete predictor of tissue damage: two electrodes delivering identical total charge but differing in surface area will pose very different injury risk, since damage correlates more closely with the local current density at the electrode-tissue interface than with total charge delivered. Because $D$ and $Q$ trade off logarithmically against one another along the safety boundary, small reductions in electrode area produce disproportionately large increases in charge density for a fixed delivered charge -- a relationship explored quantitatively in Section~\ref{sec:sensitivity}.
+
+\subsection{Implementation}
+
+The tool was implemented in Python, structured into a core equations module (implementing Equations~\ref{eq:strength-duration}--\ref{eq:shannon}), a plotting module generating strength-duration and Shannon safety visualisations, and two front-ends: a scriptable interface for fixed parameter sets and an interactive command-line interface for iterative exploration. A browser-based interactive calculator was additionally built, allowing real-time adjustment of all five input parameters (pulse duration, rheobase, chronaxie, electrode area, and safety limit $k$) with live recomputation of all derived quantities and the strength-duration curve.
+
+\section{Results}
+
+\subsection{Example Configuration}
+
+The tool was evaluated using a representative cochlear-implant-scale electrode configuration: pulse duration 200\,$\mu$s, rheobase 0.5\,mA, chronaxie 150\,$\mu$s, and electrode area 0.01\,cm\textsuperscript{2}. Table~\ref{tab:results} summarises the computed outputs.
+
+\begin{table}[H]
+\centering
+\caption{Computed results for the example configuration.}
+\label{tab:results}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Quantity & Value \\
+\midrule
+Threshold current & 0.875 mA \\
+Threshold charge & 175.0 nC \\
+Charge density & 17.50 $\mu$C/cm\textsuperscript{2} \\
+Shannon $k$-value & 0.486 \\
+Safety limit ($k$) & 1.5 \\
+Verdict & Safe \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The computed $k$-value of 0.486 falls well below both the conservative (1.5) and historical (1.85) safety limits, indicating this configuration operates with considerable safety margin -- consistent with expectations for a clinically-deployed cochlear implant electrode design.
+
+\subsection{Strength-Duration Curve}
+
+Fig.~\ref{fig:sd} shows the computed strength-duration curve for the example configuration, with the chronaxie point (where threshold current equals twice the rheobase) and the evaluated 200\,$\mu$s operating point marked.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/01_strength_duration.png}
+\caption{Strength-duration curve for the example configuration (rheobase = 0.5\,mA, chronaxie = 150\,$\mu$s), with the chronaxie point and the evaluated 200\,$\mu$s pulse duration marked.}
+\label{fig:sd}
+\end{figure}
+
+\subsection{Shannon Safety Plot}
+
+Fig.~\ref{fig:shannon} shows the charge-density-versus-charge log-log plot, with the safety boundary line at $k=1.5$ and the evaluated configuration marked well within the safe region below the boundary.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/02_shannon_safety.png}
+\caption{Shannon safety plot: charge density vs.\ charge per phase (log-log axes), with the $k=1.5$ safety boundary and the evaluated configuration marked.}
+\label{fig:shannon}
+\end{figure}
+
+\subsection{Sensitivity to Electrode Area}
+\label{sec:sensitivity}
+
+To characterise how safety margin degrades as electrode geometry changes, the Shannon $k$-value was computed across a range of electrode areas from 0.001 to 1\,cm\textsuperscript{2}, holding threshold charge fixed at 175\,nC (the value from the example configuration). Fig.~\ref{fig:sweep} shows the resulting curve, with both the conservative ($k=1.5$) and historical Shannon ($k=1.85$) limits marked.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/03_area_sweep.png}
+\caption{Shannon $k$-value as a function of electrode area, for a fixed threshold charge of 175\,nC. The example electrode (0.01\,cm\textsuperscript{2}) sits well within the safe region; the curve crosses the conservative safety limit near 0.001--0.002\,cm\textsuperscript{2}.}
+\label{fig:sweep}
+\end{figure}
+
+The sweep shows that safety margin is highly sensitive to electrode area at small scales: for the fixed charge evaluated here, the configuration remains within the conservative safety limit down to approximately 0.001--0.002\,cm\textsuperscript{2}, below which $k$ rises sharply above 1.5. This behaviour is a direct consequence of the logarithmic form of the Shannon boundary (Equation~\ref{eq:shannon}): because $D = Q/A$, halving the electrode area doubles the charge density, and since $k$ depends on $\log_{10}(D)$, this produces a roughly constant additive penalty to $k$ per halving of area, rather than a gradual decline. This has direct relevance to the design of high-density or miniaturised electrode arrays (e.g. penetrating microelectrode arrays for cortical BCIs), where reducing individual contact area to improve spatial selectivity necessarily narrows the safe operating range for delivered charge, independent of any change to the underlying tissue excitability parameters.
+
+\section{Discussion}
+
+The tool successfully reproduces the expected qualitative and quantitative behaviour of both underlying models. The strength-duration curve shows the characteristic hyperbolic decay toward the rheobase asymptote, and the computed threshold current and charge values are consistent with hand-calculated values from Equations~\ref{eq:strength-duration}--\ref{eq:threshold-charge}, providing a basic verification of correctness. The Shannon safety evaluation correctly identifies the example configuration as operating with substantial safety margin, which is expected given the parameters were chosen to approximate a clinically-validated device class.
+
+A key limitation of this tool is that it evaluates a single, static configuration rather than optimising across a design space; a natural extension would be to sweep across electrode area or pulse duration to identify the full range of safe operating parameters for a given tissue type, rather than evaluating one point at a time. Additionally, the model treats $k_{rh}$, $\tau_c$, and the safety constant $k$ as user-supplied inputs; in practice these vary substantially by tissue type, electrode material, and stimulation waveform, and are typically determined empirically rather than assumed. The tool is therefore best understood as a calculation aid built on published models, not a substitute for empirically validated, tissue- and device-specific safety limits.
+
+The area-sensitivity analysis in Section~\ref{sec:sensitivity} further suggests a design principle worth stating explicitly: because the Shannon boundary penalises small electrode area disproportionately (Fig.~\ref{fig:sweep}), safety margin cannot be treated as a fixed property of a stimulation protocol independent of electrode geometry. A charge level that is comfortably safe for a standard cochlear implant contact may be unsafe for a much smaller penetrating microelectrode delivering the same charge, even though the underlying tissue excitability (rheobase, chronaxie) is unchanged. This reinforces that stimulation safety evaluation must be performed per-electrode-design rather than assumed to transfer across device form factors.
+
+\section{Conclusion}
+
+This project translated two established bioelectronics safety models -- the Weiss/Lapicque strength-duration relationship and the Shannon charge density safety model -- into a working, verifiable computational tool. The resulting calculator correctly evaluates stimulation configurations against established safety limits and produces standard visualisations (strength-duration and Shannon safety plots) used in neural stimulation device design. Future work could extend the tool to sweep across parameter ranges to identify full safe operating envelopes, incorporate tissue-specific parameter libraries, and validate outputs against published device specifications for cochlear implants, deep brain stimulators, and spinal cord stimulators.
+
+\section*{Code Availability}
+
+The full implementation, including the core equations module, plotting scripts, and both command-line interfaces, is available at: \url{https://github.com/irisdimi/stim-safety-calculator}.
+
+\begin{thebibliography}{9}
+
+\bibitem{shannon1992}
+R.\,V.\ Shannon, ``A model of safe levels for electrical stimulation,'' \textit{IEEE Trans.\ Biomed.\ Eng.}, vol.\ 39, no.\ 4, pp.\ 424--426, Apr.\ 1992.
+
+\bibitem{weiss1901}
+G.\ Weiss, ``Sur la possibilit\'e de rendre comparables entre eux les appareils servant \`a l'excitation \'electrique,'' \textit{Arch.\ Ital.\ Biol.}, vol.\ 35, pp.\ 413--446, 1901.
+
+\bibitem{lapicque1907}
+L.\ Lapicque, ``Recherches quantitatives sur l'excitation \'electrique des nerfs trait\'ee comme une polarisation,'' \textit{J.\ Physiol.\ Pathol.\ Gen.}, vol.\ 9, pp.\ 620--635, 1907.
+
+\end{thebibliography}
+
+\end{document}
