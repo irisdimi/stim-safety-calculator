@@ -109,7 +109,7 @@ def plot_waveform_shapes(pulse_width_us):
 
 def plot_comparison(results):
     """
-    Bar chart comparing threshold current across the three waveforms -
+    Bar chart comparing threshold current across the three waveforms,
     the key result showing charge-balancing's cost in current efficiency.
     """
     names = list(results.keys())

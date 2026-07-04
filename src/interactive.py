@@ -3,7 +3,7 @@ Interactive command-line version: prompts you for parameters, runs the
 evaluation, prints results, and generates both plots marked with your
 specific setup.
 
-Run this instead of main.py if you want to type in your own numbers
+Run this instead of main.py to type in your own numbers
 each time rather than editing example values in code.
 """
 
