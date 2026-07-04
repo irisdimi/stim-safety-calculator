@@ -1,7 +1,7 @@
 """
 Interactive command-line version: prompts you for parameters, runs the
-evaluation, prints results, and generates both plots marked with your
-specific setup.
+evaluation, prints results, and generates both plots marked with the
+chosen setup.
 
 Run this instead of main.py to type in your own numbers
 each time rather than editing example values in code.
