@@ -31,9 +31,7 @@ Two models, working together:
          often used clinically for a safety margin. ADJUST THESE
          to match your lecture notes if they use different constants.
 
-NOTE: Always double check constants (k, chronaxie, rheobase values)
-against your BMET 2902 lecture notes - different sources use slightly
-different conventions.
+
 """
 
 import math
