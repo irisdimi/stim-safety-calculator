@@ -1,9 +1,9 @@
 """
 Generates the two standard plots used to visualize stimulation safety:
 
-1. Strength-duration curve - current needed to reach threshold, across
+1. Strength-duration curve: current needed to reach threshold, across
    a range of pulse durations.
-2. Shannon safety plot - charge density vs. charge per phase, on a
+2. Shannon safety plot: charge density vs. charge per phase, on a
    log-log scale, with the safety boundary line drawn in.
 """
 

@@ -1,17 +1,23 @@
 """
-Defines stimulation current waveforms as functions of time.
+Defines time-dependent stimulation current waveforms.
 
-Real neurostimulation devices rarely use simple rectangular pulses.
-The main reason: a rectangular monophasic pulse delivers net DC charge
-into tissue, which over many repetitions causes electrode corrosion
-and tissue damage through electrochemical reactions. Real devices use
-CHARGE-BALANCED waveforms instead - the net charge delivered over a
-full cycle is zero, even though a "useful" (cathodic) phase still
-depolarizes the neuron.
+In practice, neurostimulation systems usually do not rely on simple
+rectangular monophasic pulses. A monophasic rectangular pulse injects
+net DC charge into the tissue. If repeated over time, this can drive
+electrochemical reactions at the electrode interface, increasing the
+risk of electrode corrosion and tissue injury.
 
-Each function below returns the current (in normalized units, -1 to
-+1) at a given time t, given the pulse's shape parameters. Multiply
-by an amplitude to scale.
+For this reason, clinical stimulation commonly uses charge-balanced
+waveforms. In these waveforms, the total charge delivered over one full
+cycle is approximately zero. The cathodic phase can still provide the
+effective neural stimulation, while the opposing phase helps recover
+the delivered charge.
+
+The functions below describe waveform shape as a function of time.
+Each function returns a normalized current value between -1 and +1 for
+a given time t and set of waveform parameters. This normalized output
+can then be multiplied by an amplitude to obtain the desired current
+scale.
 """
 
 import numpy as np
@@ -20,7 +26,7 @@ import numpy as np
 def rectangular(t: np.ndarray, duration: float) -> np.ndarray:
     """
     Simple rectangular monophasic pulse: constant current for the
-    full duration, then off. Not charge-balanced - included as the
+    full duration, then off. Not charge-balanced, included as the
     baseline case matching the classic Weiss/Lapicque formula.
     """
     return np.where((t >= 0) & (t < duration), 1.0, 0.0)
@@ -43,9 +49,8 @@ def biphasic_asymmetric(t: np.ndarray, cathodic_duration: float, anodic_ratio: f
     Charge-balanced ASYMMETRIC biphasic pulse: a brief, high-amplitude
     cathodic phase (the "useful" excitation phase) followed by a longer,
     lower-amplitude anodic recovery phase. This is common in real devices
-    (e.g. many cochlear implant stimulation strategies) because it keeps
-    the efficient short cathodic phase for excitation while still
-    achieving charge balance, without needing an equally brief (and
+    because it keeps the efficient short cathodic phase for excitation while
+    still achieving charge balance, without needing an equally brief (and
     therefore disruptive) anodic phase.
 
     anodic_ratio controls how much longer the anodic phase is relative
@@ -68,7 +73,7 @@ def biphasic_anodic_first(t: np.ndarray, phase_duration: float) -> np.ndarray:
     by the depolarizing (cathodic) phase. Still charge-balanced overall,
     but this ordering is known to REQUIRE MORE CURRENT to trigger a
     response, because the initial anodic phase drives the membrane
-    away from threshold before the cathodic phase even begins - the
+    away from threshold before the cathodic phase even begins, the
     cathodic phase must first "undo" that hyperpolarization before it
     can start driving the membrane toward threshold. This is sometimes
     called anodal pre-hyperpolarization or anodal block, and it is the

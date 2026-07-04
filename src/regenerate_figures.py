@@ -1,6 +1,6 @@
 """
 Regenerates ALL project figures with a consistent, polished style.
-Run this once to produce all five figures in the figures/ folder.
+
 """
 
 import os
@@ -37,9 +37,6 @@ def save(fig, name):
     plt.close(fig)
 
 
-# ---------------------------------------------------------------------------
-# FIGURE 1: Strength-duration curve
-# ---------------------------------------------------------------------------
 def fig_strength_duration():
     durations = np.linspace(CHRONAXIE_US * 0.1, CHRONAXIE_US * 10, 500)
     currents = [threshold_current(d, RHEOBASE_MA, CHRONAXIE_US) for d in durations]
@@ -85,9 +82,6 @@ def fig_strength_duration():
     save(fig, "01_strength_duration.png")
 
 
-# ---------------------------------------------------------------------------
-# FIGURE 2: Shannon safety plot
-# ---------------------------------------------------------------------------
 def fig_shannon():
     Q_uC = np.logspace(-2, 3, 500)
     D_limit = 10 ** (K_LIMIT - np.log10(Q_uC))
@@ -130,9 +124,6 @@ def fig_shannon():
     save(fig, "02_shannon_safety.png")
 
 
-# ---------------------------------------------------------------------------
-# FIGURE 3: Area sensitivity sweep
-# ---------------------------------------------------------------------------
 def fig_area_sweep():
     Q_th = threshold_charge(DURATION_US, RHEOBASE_MA, CHRONAXIE_US)
     areas = np.logspace(-3, 0, 300)
@@ -170,9 +161,6 @@ def fig_area_sweep():
     save(fig, "03_area_sweep.png")
 
 
-# ---------------------------------------------------------------------------
-# FIGURE 4: Waveform shapes
-# ---------------------------------------------------------------------------
 def fig_waveform_shapes():
     pw = DURATION_US
     fig, axes = plt.subplots(1, 4, figsize=(14, 3.6), sharey=True)
@@ -200,9 +188,6 @@ def fig_waveform_shapes():
     save(fig, "04_waveform_shapes.png")
 
 
-# ---------------------------------------------------------------------------
-# FIGURE 5: Waveform threshold comparison
-# ---------------------------------------------------------------------------
 def fig_waveform_comparison():
     pw = DURATION_US
     configs = {

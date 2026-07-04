@@ -1,7 +1,6 @@
 """
 Shared plotting style for all figures in this project, so every plot
-has a consistent, clean, publication-style look. Import and call
-apply_style() at the top of any plotting script.
+has a consistent and clean look.
 """
 
 import matplotlib.pyplot as plt

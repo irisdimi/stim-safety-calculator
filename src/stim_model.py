@@ -4,8 +4,8 @@ Core equations for neural stimulation safety analysis.
 Two models, working together:
 
 1. STRENGTH-DURATION CURVE (Weiss/Lapicque)
-   Tells you the minimum current needed to trigger a neural response,
-   given how long your stimulation pulse lasts.
+   The minimum current needed to trigger a neural response,
+   given how long stimulation pulse lasts.
 
        I_th(d) = I_rh * (1 + chronaxie / d)
 
@@ -17,7 +17,7 @@ Two models, working together:
      d          = pulse duration
 
 2. SHANNON SAFETY MODEL (1992)
-   Tells you the maximum safe charge you can deliver through an
+   The maximum safe charge that can be delivered through an
    electrode before risking tissue damage, based on charge density
    (charge per unit electrode area).
 
@@ -28,8 +28,7 @@ Two models, working together:
      Q = charge per phase (uC)
      k = empirical safety constant. k ~ 1.85 is the historical
          "Shannon limit" derived from animal studies; k ~ 1.5 is
-         often used clinically for a safety margin. ADJUST THESE
-         to match your lecture notes if they use different constants.
+         often used clinically for a safety margin.
 
 
 """
@@ -52,7 +51,7 @@ def threshold_charge(duration_us: float, rheobase_mA: float, chronaxie_us: float
 
     Q_th(d) = I_th(d) * d = I_rh * (d + chronaxie)
 
-    Units: mA * us = nC (nanocoulombs), since 1 mA * 1 us = 1 nC.
+    Units: mA * us = nC (nanocoulombs)
     """
     return rheobase_mA * (duration_us + chronaxie_us)
 

@@ -1,6 +1,6 @@
 """
 Generalizes threshold-finding to ARBITRARY current waveforms, using
-the RC "leaky integrator" model of a neuron membrane - the same
+the RC "leaky integrator" model of a neuron membrane, the same
 underlying physics Lapicque used to originally derive the
 strength-duration relationship, just applied here to non-rectangular
 pulses where no simple algebraic formula exists.
@@ -11,7 +11,7 @@ charged through a resistor:
 
     dV/dt = (I(t) - V/R) / C
 
-Normalizing R=1 (we only care about relative current thresholds),
+Normalizing R=1 (only taking relative current thresholds into account),
 this simplifies to:
 
     dV/dt = (I(t) - V) / tau_m
@@ -28,14 +28,8 @@ of chronaxie) gives:
 
 This lets us derive tau_m directly from the chronaxie value already
 used elsewhere in this project, so results stay consistent with the
-Weiss/Lapicque parameters you're already using.
+Weiss/Lapicque parameters already being used.
 
-NOTE: This RC/exponential model and the algebraic Weiss hyperbolic
-formula (used in stim_model.py) are two DIFFERENT classical
-approximations of the same real strength-duration behaviour. They
-agree closely but not exactly. We need this RC formulation here
-specifically because it lets us simulate non-rectangular waveforms,
-which the algebraic formula cannot handle.
 """
 
 import numpy as np

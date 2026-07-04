@@ -1,7 +1,6 @@
 """
 Runs the calculator with example parameters (a rough cochlear implant
-electrode setup) - useful for a quick check that everything works, or
-as a template to edit with your own values directly in code.
+electrode setup). Useful for a quick check that everything works.
 """
 
 from stim_model import evaluate_stimulation

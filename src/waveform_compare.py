@@ -4,7 +4,7 @@ waveforms, for the same rheobase/chronaxie tissue parameters.
 
 Also validates the leaky-integrator model against the algebraic
 Weiss/Lapicque formula for the rectangular case, where both should
-approximately agree - a useful sanity check that the simulation is
+approximately agree, a useful sanity check that the simulation is
 behaving correctly before trusting it for waveforms with no closed
 form.
 """
