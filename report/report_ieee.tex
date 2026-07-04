@@ -12,14 +12,14 @@
 
 \author{
 \IEEEauthorblockN{Aya Banna}
-\IEEEauthorblockA{Biomedical Engineering \\
-University of Sydney}
+\IEEEauthorblockA{\textit{Biomedical Engineering (Honours)} \\
+\textit{University of Sydney}}
 }
 
 \maketitle
 
 \begin{abstract}
-Electrical stimulation of neural tissue, used in applications ranging from cochlear implants to deep brain and spinal cord stimulators, must deliver sufficient charge to excite target neurons while remaining below thresholds associated with tissue damage. This report presents a computational tool that evaluates stimulation safety by combining two established models: the Weiss/Lapicque strength-duration relationship, which determines the minimum current required to excite tissue for a given pulse duration, and the Shannon (1992) charge density safety model, which bounds the maximum charge deliverable through an electrode of a given area. The tool computes threshold current, threshold charge, charge density, and a Shannon $k$-value for a user-specified stimulation configuration, returning a safe/unsafe verdict. For a representative cochlear-implant-scale electrode configuration (200\,$\mu$s pulse duration, 0.5\,mA rheobase, 150\,$\mu$s chronaxie, 0.01\,cm\textsuperscript{2} electrode area), the tool computes a Shannon $k$-value of 0.486, well within the conservative 1.5 safety limit. The tool is extended with a leaky-integrator membrane model that generalises threshold evaluation to arbitrary, charge-balanced stimulation waveforms; this analysis reproduces the known result that anodic-first phase ordering raises excitation threshold substantially (a 66\% increase relative to cathodic-first waveforms in the configuration studied). The tool is implemented as both a scriptable Python package and an interactive calculator, intended as an educational and design-verification aid.
+Electrical stimulation of neural tissue, used in applications ranging from cochlear implants to deep brain and spinal cord stimulators, must deliver sufficient charge to excite target neurons while remaining below thresholds associated with tissue damage. This report presents a computational tool that evaluates stimulation safety by combining two established models: the Weiss/Lapicque strength-duration relationship, which determines the minimum current required to excite tissue for a given pulse duration, and the Shannon (1992) charge density safety model, which bounds the maximum charge deliverable through an electrode of a given area. The tool computes threshold current, threshold charge, charge density, and a Shannon $k$-value for a user-specified stimulation configuration, returning a safe/unsafe verdict. For a representative cochlear-implant-scale electrode configuration (200\,$\mu$s pulse duration, 0.5\,mA rheobase, 150\,$\mu$s chronaxie, 0.01\,cm\textsuperscript{2} electrode area), the tool computes a Shannon $k$-value of 0.486, well within the conservative 1.5 safety limit. The tool is extended with a leaky-integrator membrane model that generalises threshold evaluation to arbitrary, charge-balanced stimulation waveforms; this analysis reproduces the known result that anodic-first phase ordering raises excitation threshold substantially (a 66\% increase relative to cathodic-first waveforms in the configuration studied). The tool is implemented as both a scriptable Python package and an interactive calculator, and situates its analysis within a cochlear tonotopic map (via the Greenwood place-frequency function) to connect the abstract safety metrics to concrete electrode-array design. It is intended as an educational and design-verification aid.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -85,7 +85,7 @@ The tool was implemented in Python, structured into a core equations module (imp
 
 The tool was evaluated using a representative cochlear-implant-scale electrode configuration: pulse duration 200\,$\mu$s, rheobase 0.5\,mA, chronaxie 150\,$\mu$s, and electrode area 0.01\,cm\textsuperscript{2}. Table~\ref{tab:results} summarises the computed outputs.
 
-\begin{table}[H]
+\begin{table}[!ht]
 \centering
 \caption{Computed results for the example configuration.}
 \label{tab:results}
@@ -109,9 +109,9 @@ The computed $k$-value of 0.486 falls well below both the conservative (1.5) and
 
 Fig.~\ref{fig:sd} shows the computed strength-duration curve for the example configuration, with the chronaxie point (where threshold current equals twice the rheobase) and the evaluated 200\,$\mu$s operating point marked.
 
-\begin{figure}[H]
+\begin{figure}[!tb]
 \centering
-\includegraphics[width=\linewidth]{figures/01_strength_duration.png}
+\includegraphics[width=\linewidth]{01_strength_duration.png}
 \caption{Strength-duration curve for the example configuration (rheobase = 0.5\,mA, chronaxie = 150\,$\mu$s), with the chronaxie point and the evaluated 200\,$\mu$s pulse duration marked.}
 \label{fig:sd}
 \end{figure}
@@ -120,9 +120,9 @@ Fig.~\ref{fig:sd} shows the computed strength-duration curve for the example con
 
 Fig.~\ref{fig:shannon} shows the charge-density-versus-charge log-log plot, with the safety boundary line at $k=1.5$ and the evaluated configuration marked well within the safe region below the boundary.
 
-\begin{figure}[H]
+\begin{figure}[!tb]
 \centering
-\includegraphics[width=\linewidth]{figures/02_shannon_safety.png}
+\includegraphics[width=\linewidth]{02_shannon_safety.png}
 \caption{Shannon safety plot: charge density vs.\ charge per phase (log-log axes), with the $k=1.5$ safety boundary and the evaluated configuration marked.}
 \label{fig:shannon}
 \end{figure}
@@ -132,9 +132,9 @@ Fig.~\ref{fig:shannon} shows the charge-density-versus-charge log-log plot, with
 
 To characterise how safety margin degrades as electrode geometry changes, the Shannon $k$-value was computed across a range of electrode areas from 0.001 to 1\,cm\textsuperscript{2}, holding threshold charge fixed at 175\,nC (the value from the example configuration). Fig.~\ref{fig:sweep} shows the resulting curve, with both the conservative ($k=1.5$) and historical Shannon ($k=1.85$) limits marked.
 
-\begin{figure}[H]
+\begin{figure}[!tb]
 \centering
-\includegraphics[width=\linewidth]{figures/03_area_sweep.png}
+\includegraphics[width=\linewidth]{03_area_sweep.png}
 \caption{Shannon $k$-value as a function of electrode area, for a fixed threshold charge of 175\,nC. The example electrode (0.01\,cm\textsuperscript{2}) sits well within the safe region; the curve crosses the conservative safety limit near 0.001--0.002\,cm\textsuperscript{2}.}
 \label{fig:sweep}
 \end{figure}
@@ -146,25 +146,44 @@ The sweep shows that safety margin is highly sensitive to electrode area at smal
 
 The leaky-integrator model (Equation~\ref{eq:rc}) was used to compare excitation thresholds across four waveform types: a monophasic rectangular pulse, a symmetric charge-balanced biphasic pulse, an asymmetric charge-balanced biphasic pulse (with a longer, lower-amplitude recovery phase), and an anodic-first biphasic pulse. The shapes of these waveforms are shown in Fig.~\ref{fig:shapes}, and the resulting thresholds in Fig.~\ref{fig:wavecompare}.
 
-\begin{figure}[H]
+\begin{figure}[!tb]
 \centering
-\includegraphics[width=\linewidth]{figures/04_waveform_shapes.png}
+\includegraphics[width=\linewidth]{04_waveform_shapes.png}
 \caption{The four stimulation waveforms compared. All charge-balanced variants deliver zero net charge over a full cycle.}
 \label{fig:shapes}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!tb]
 \centering
-\includegraphics[width=\linewidth]{figures/05_waveform_comparison.png}
+\includegraphics[width=\linewidth]{05_waveform_comparison.png}
 \caption{Threshold current amplitude by waveform shape, for identical cathodic pulse width and tissue parameters. Cathodic-first waveforms share an identical threshold; the anodic-first ordering requires 66\% more current.}
 \label{fig:wavecompare}
 \end{figure}
 
 Two results emerge. First, the three cathodic-first waveforms (rectangular, symmetric biphasic, and asymmetric biphasic) share an identical excitation threshold of 0.828\,mA. This may initially appear counter-intuitive, since charge-balancing is often assumed to carry an efficiency cost; however, because excitation occurs during the initial cathodic phase, before the recovery phase begins, the presence, duration, or amplitude of the subsequent anodic phase has no effect on the threshold. Second, the anodic-first waveform requires substantially more current (1.372\,mA, a 66\% increase) to reach threshold. This reflects the well-documented phenomenon of anodal pre-hyperpolarisation: leading with the hyperpolarising phase drives the membrane away from threshold, so the subsequent cathodic phase must first counteract this before it can drive excitation. This result explains the near-universal design choice of cathodic-first phase ordering in real stimulation devices, and demonstrates that the simulation captures a physiologically meaningful effect beyond what the algebraic model alone can represent.
 
+\subsection{Application Context: Cochlear Tonotopic Mapping}
+\label{sec:tonotopy}
+
+To situate the tool's safety analysis within a concrete device context, the electrode configuration modelled throughout this report is placed on a map of the cochlea. The cochlea is tonotopically organised: hair cells and their associated spiral ganglion neurons are arranged such that the base responds to high frequencies and the apex to low frequencies. The relationship between position and characteristic frequency is described by the Greenwood function \cite{greenwood1990}:
+\begin{equation}
+f = A\left(10^{ax} - k\right)
+\label{eq:greenwood}
+\end{equation}
+where $f$ is the characteristic frequency, $x$ is the fractional distance from the apex, and, for the human cochlea, $A = 165.4$, $a = 2.1$, and $k = 0.88$. Fig.~\ref{fig:tonotopy} shows a modelled cochlear implant electrode array positioned along a spiral cochlea, with each contact coloured by the characteristic frequency it stimulates according to Equation~\ref{eq:greenwood}.
+
+\begin{figure}[!tb]
+\centering
+\includegraphics[width=0.85\linewidth]{06_tonotopic_map.png}
+\caption{Modelled cochlear implant electrode array on a tonotopic map of the cochlea. Each contact is coloured by the characteristic frequency of the spiral ganglion neurons it stimulates, computed via the Greenwood function (Equation~\ref{eq:greenwood}). Insertion depth determines how far toward the low-frequency apex the array reaches.}
+\label{fig:tonotopy}
+\end{figure}
+
+This context clarifies the practical significance of the safety analysis: each contact shown is a small-area electrode of precisely the kind evaluated in Section~\ref{sec:sensitivity}, and the tension between reducing contact size (to improve tonotopic place-selectivity) and maintaining an adequate safety margin (Fig.~\ref{fig:sweep}) is a central design constraint in cochlear implant electrode arrays. The insertion depth further governs the lowest characteristic frequency the array can reach, a well-known limitation in cochlear implant design where incomplete insertion leaves the low-frequency apical region unstimulated.
+
 \section{Discussion}
 
-The tool successfully reproduces the expected qualitative and quantitative behaviour of both underlying models. The strength-duration curve shows the characteristic hyperbolic decay toward the rheobase asymptote, and the computed threshold current and charge values are consistent with hand-calculated values from Equations~\ref{eq:strength-duration}--\ref{eq:threshold-charge}, providing a basic verification of correctness. The Shannon safety evaluation correctly identifies the example configuration as operating with substantial safety margin, which is expected given the parameters were chosen to approximate a clinically-validated device class.
+The tool successfully reproduces the expected qualitative and quantitative behaviour of both underlying models. The strength-duration curve shows the characteristic hyperbolic decay toward the rheobase asymptote, and the computed threshold current and charge values are consistent with hand-calculated values from Equations~\ref{eq:strength-duration}-\ref{eq:threshold-charge}, providing a basic verification of correctness. The Shannon safety evaluation correctly identifies the example configuration as operating with substantial safety margin, which is expected given the parameters were chosen to approximate a clinically-validated device class.
 
 A key limitation of this tool is that it evaluates a single, static configuration rather than optimising across a design space; a natural extension would be to sweep across electrode area or pulse duration to identify the full range of safe operating parameters for a given tissue type, rather than evaluating one point at a time. Additionally, the model treats $k_{rh}$, $\tau_c$, and the safety constant $k$ as user-supplied inputs; in practice these vary substantially by tissue type, electrode material, and stimulation waveform, and are typically determined empirically rather than assumed. The tool is therefore best understood as a calculation aid built on published models, not a substitute for empirically validated, tissue- and device-specific safety limits.
 
@@ -174,7 +193,7 @@ The waveform analysis in Section~\ref{sec:waveforms} extends the tool beyond the
 
 \section{Conclusion}
 
-This project translated two established bioelectronics safety models -- the Weiss/Lapicque strength-duration relationship and the Shannon charge density safety model -- into a working, verifiable computational tool. The resulting calculator correctly evaluates stimulation configurations against established safety limits and produces standard visualisations (strength-duration and Shannon safety plots) used in neural stimulation device design. Future work could extend the tool to sweep across parameter ranges to identify full safe operating envelopes, incorporate tissue-specific parameter libraries, and validate outputs against published device specifications for cochlear implants, deep brain stimulators, and spinal cord stimulators.
+This project translated two established bioelectronics safety models, the Weiss/Lapicque strength-duration relationship and the Shannon charge density safety mode, into a working, verifiable computational tool. The resulting calculator correctly evaluates stimulation configurations against established safety limits and produces standard visualisations (strength-duration and Shannon safety plots) used in neural stimulation device design. Future work could extend the tool to sweep across parameter ranges to identify full safe operating envelopes, incorporate tissue-specific parameter libraries, and validate outputs against published device specifications for cochlear implants, deep brain stimulators, and spinal cord stimulators.
 
 \section*{Code Availability}
 
@@ -193,6 +212,25 @@ L.\ Lapicque, ``Recherches quantitatives sur l'excitation \'electrique des nerfs
 
 \bibitem{merrill2005}
 D.\,R.\ Merrill, M.\ Bikson, and J.\,G.\,R.\ Jefferys, ``Electrical stimulation of excitable tissue: design of efficacious and safe protocols,'' \textit{J.\ Neurosci.\ Methods}, vol.\ 141, no.\ 2, pp.\ 171--198, Feb.\ 2005.
+
+\bibitem{greenwood1990}
+D.\,D.\ Greenwood, ``A cochlear frequency-position function for several species--29 years later,'' \textit{J.\ Acoust.\ Soc.\ Am.}, vol.\ 87, no.\ 6, pp.\ 2592--2605, Jun.\ 1990.
+
+\bibitem{mcneal1976}
+D.\,R.\ McNeal, ``Analysis of a model for excitation of myelinated nerve,'' \textit{IEEE Trans.\ Biomed.\ Eng.}, vol.\ BME-23, no.\ 4, pp.\ 329--337, Jul.\ 1976.
+
+\bibitem{rattay1989}
+F.\ Rattay, ``Analysis of models for extracellular fiber stimulation,'' \textit{IEEE Trans.\ Biomed.\ Eng.}, vol.\ 36, no.\ 7, pp.\ 676--682, Jul.\ 1989.
+
+\bibitem{mcintyre2002}
+C.\,C.\ McIntyre and W.\,M.\ Grill, ``Extracellular stimulation of central neurons: influence of stimulus waveform and frequency on neuronal output,'' \textit{J.\ Neurophysiol.}, vol.\ 88, no.\ 4, pp.\ 1592--1604, Oct.\ 2002.
+
+\bibitem{cogan2008}
+S.\,F.\ Cogan, ``Neural stimulation and recording electrodes,'' \textit{Annu.\ Rev.\ Biomed.\ Eng.}, vol.\ 10, pp.\ 275--309, 2008.
+
+\bibitem{wilson2008}
+B.\,S.\ Wilson and M.\,F.\ Dorman, ``Cochlear implants: a remarkable past and a brilliant future,'' \textit{Hearing Res.}, vol.\ 242, no.\ 1--2, pp.\ 3--21, Aug.\ 2008.
+\end{thebibliography}
 
 \end{thebibliography}
 
