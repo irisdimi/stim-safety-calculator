@@ -48,8 +48,6 @@ log10(D) = k - log10(Q)
 ```
 Where D = charge density (uC/cm²), Q = charge per phase (uC), and k is an empirical safety constant (k≈1.5 conservative, k≈1.85 historical Shannon limit).
 
-⚠️ Double-check constants against your own lecture notes — different sources use slightly different conventions.
-
 ## Structure
 
 ```
