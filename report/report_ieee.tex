@@ -19,11 +19,11 @@ University of Sydney}
 \maketitle
 
 \begin{abstract}
-Electrical stimulation of neural tissue, used in applications ranging from cochlear implants to deep brain and spinal cord stimulators, must deliver sufficient charge to excite target neurons while remaining below thresholds associated with tissue damage. This report presents a computational tool that evaluates stimulation safety by combining two established models: the Weiss/Lapicque strength-duration relationship, which determines the minimum current required to excite tissue for a given pulse duration, and the Shannon (1992) charge density safety model, which bounds the maximum charge deliverable through an electrode of a given area. The tool computes threshold current, threshold charge, charge density, and a Shannon $k$-value for a user-specified stimulation configuration, returning a safe/unsafe verdict. For a representative cochlear-implant-scale electrode configuration (200\,$\mu$s pulse duration, 0.5\,mA rheobase, 150\,$\mu$s chronaxie, 0.01\,cm\textsuperscript{2} electrode area), the tool computes a Shannon $k$-value of 0.486, well within the conservative 1.5 safety limit. The tool is implemented as both a scriptable Python package and an interactive calculator, intended as an educational and design-verification aid.
+Electrical stimulation of neural tissue, used in applications ranging from cochlear implants to deep brain and spinal cord stimulators, must deliver sufficient charge to excite target neurons while remaining below thresholds associated with tissue damage. This report presents a computational tool that evaluates stimulation safety by combining two established models: the Weiss/Lapicque strength-duration relationship, which determines the minimum current required to excite tissue for a given pulse duration, and the Shannon (1992) charge density safety model, which bounds the maximum charge deliverable through an electrode of a given area. The tool computes threshold current, threshold charge, charge density, and a Shannon $k$-value for a user-specified stimulation configuration, returning a safe/unsafe verdict. For a representative cochlear-implant-scale electrode configuration (200\,$\mu$s pulse duration, 0.5\,mA rheobase, 150\,$\mu$s chronaxie, 0.01\,cm\textsuperscript{2} electrode area), the tool computes a Shannon $k$-value of 0.486, well within the conservative 1.5 safety limit. The tool is extended with a leaky-integrator membrane model that generalises threshold evaluation to arbitrary, charge-balanced stimulation waveforms; this analysis reproduces the known result that anodic-first phase ordering raises excitation threshold substantially (a 66\% increase relative to cathodic-first waveforms in the configuration studied). The tool is implemented as both a scriptable Python package and an interactive calculator, intended as an educational and design-verification aid.
 \end{abstract}
 
 \begin{IEEEkeywords}
-neural stimulation, strength-duration curve, charge density, tissue safety, Shannon model, bioelectronics
+neural stimulation, strength-duration curve, charge density, tissue safety, Shannon model, charge-balanced waveforms, bioelectronics
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -65,6 +65,15 @@ k_{actual} = \log_{10}(D) + \log_{10}(Q)
 and comparing $k_{actual}$ against a chosen safety limit; configurations with $k_{actual}$ below the limit fall within the safe region.
 
 The Shannon model's practical significance lies in the fact that charge alone is an incomplete predictor of tissue damage: two electrodes delivering identical total charge but differing in surface area will pose very different injury risk, since damage correlates more closely with the local current density at the electrode-tissue interface than with total charge delivered. Because $D$ and $Q$ trade off logarithmically against one another along the safety boundary, small reductions in electrode area produce disproportionately large increases in charge density for a fixed delivered charge -- a relationship explored quantitatively in Section~\ref{sec:sensitivity}.
+
+\subsection{Generalising to Arbitrary Waveforms}
+
+The algebraic strength-duration relationship in Equation~\ref{eq:strength-duration} applies only to rectangular pulses. Real stimulation devices, however, almost universally employ charge-balanced biphasic waveforms, in which a depolarising (cathodic) phase is paired with a recovery (anodic) phase of equal net charge, in order to prevent the net DC charge accumulation that drives electrode corrosion and faradaic tissue damage \cite{merrill2005}. To evaluate excitation thresholds for such waveforms, for which no simple closed-form solution exists, the tool implements the membrane as a leaky integrator (a resistor-capacitor circuit) governed by:
+\begin{equation}
+\tau_m \frac{dV}{dt} = I(t) - V
+\label{eq:rc}
+\end{equation}
+where $V$ is membrane voltage, $I(t)$ is the (arbitrary) stimulation current waveform, and $\tau_m$ is the membrane time constant. Equation~\ref{eq:rc} is integrated numerically for any given waveform, and a bisection search identifies the minimum current amplitude at which $V$ reaches threshold. The membrane time constant is derived from the chronaxie already used elsewhere in the tool via $\tau_m = \tau_c / \ln 2$, ensuring consistency between the algebraic and simulation-based approaches. For rectangular pulses, the simulation reproduces the algebraic threshold to within approximately 5\%, providing a validation of the numerical model before applying it to waveforms without closed-form solutions.
 
 \subsection{Implementation}
 
@@ -132,6 +141,27 @@ To characterise how safety margin degrades as electrode geometry changes, the Sh
 
 The sweep shows that safety margin is highly sensitive to electrode area at small scales: for the fixed charge evaluated here, the configuration remains within the conservative safety limit down to approximately 0.001--0.002\,cm\textsuperscript{2}, below which $k$ rises sharply above 1.5. This behaviour is a direct consequence of the logarithmic form of the Shannon boundary (Equation~\ref{eq:shannon}): because $D = Q/A$, halving the electrode area doubles the charge density, and since $k$ depends on $\log_{10}(D)$, this produces a roughly constant additive penalty to $k$ per halving of area, rather than a gradual decline. This has direct relevance to the design of high-density or miniaturised electrode arrays (e.g. penetrating microelectrode arrays for cortical BCIs), where reducing individual contact area to improve spatial selectivity necessarily narrows the safe operating range for delivered charge, independent of any change to the underlying tissue excitability parameters.
 
+\subsection{Waveform Comparison}
+\label{sec:waveforms}
+
+The leaky-integrator model (Equation~\ref{eq:rc}) was used to compare excitation thresholds across four waveform types: a monophasic rectangular pulse, a symmetric charge-balanced biphasic pulse, an asymmetric charge-balanced biphasic pulse (with a longer, lower-amplitude recovery phase), and an anodic-first biphasic pulse. The shapes of these waveforms are shown in Fig.~\ref{fig:shapes}, and the resulting thresholds in Fig.~\ref{fig:wavecompare}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/04_waveform_shapes.png}
+\caption{The four stimulation waveforms compared. All charge-balanced variants deliver zero net charge over a full cycle.}
+\label{fig:shapes}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/05_waveform_comparison.png}
+\caption{Threshold current amplitude by waveform shape, for identical cathodic pulse width and tissue parameters. Cathodic-first waveforms share an identical threshold; the anodic-first ordering requires 66\% more current.}
+\label{fig:wavecompare}
+\end{figure}
+
+Two results emerge. First, the three cathodic-first waveforms (rectangular, symmetric biphasic, and asymmetric biphasic) share an identical excitation threshold of 0.828\,mA. This may initially appear counter-intuitive, since charge-balancing is often assumed to carry an efficiency cost; however, because excitation occurs during the initial cathodic phase, before the recovery phase begins, the presence, duration, or amplitude of the subsequent anodic phase has no effect on the threshold. Second, the anodic-first waveform requires substantially more current (1.372\,mA, a 66\% increase) to reach threshold. This reflects the well-documented phenomenon of anodal pre-hyperpolarisation: leading with the hyperpolarising phase drives the membrane away from threshold, so the subsequent cathodic phase must first counteract this before it can drive excitation. This result explains the near-universal design choice of cathodic-first phase ordering in real stimulation devices, and demonstrates that the simulation captures a physiologically meaningful effect beyond what the algebraic model alone can represent.
+
 \section{Discussion}
 
 The tool successfully reproduces the expected qualitative and quantitative behaviour of both underlying models. The strength-duration curve shows the characteristic hyperbolic decay toward the rheobase asymptote, and the computed threshold current and charge values are consistent with hand-calculated values from Equations~\ref{eq:strength-duration}--\ref{eq:threshold-charge}, providing a basic verification of correctness. The Shannon safety evaluation correctly identifies the example configuration as operating with substantial safety margin, which is expected given the parameters were chosen to approximate a clinically-validated device class.
@@ -139,6 +169,8 @@ The tool successfully reproduces the expected qualitative and quantitative behav
 A key limitation of this tool is that it evaluates a single, static configuration rather than optimising across a design space; a natural extension would be to sweep across electrode area or pulse duration to identify the full range of safe operating parameters for a given tissue type, rather than evaluating one point at a time. Additionally, the model treats $k_{rh}$, $\tau_c$, and the safety constant $k$ as user-supplied inputs; in practice these vary substantially by tissue type, electrode material, and stimulation waveform, and are typically determined empirically rather than assumed. The tool is therefore best understood as a calculation aid built on published models, not a substitute for empirically validated, tissue- and device-specific safety limits.
 
 The area-sensitivity analysis in Section~\ref{sec:sensitivity} further suggests a design principle worth stating explicitly: because the Shannon boundary penalises small electrode area disproportionately (Fig.~\ref{fig:sweep}), safety margin cannot be treated as a fixed property of a stimulation protocol independent of electrode geometry. A charge level that is comfortably safe for a standard cochlear implant contact may be unsafe for a much smaller penetrating microelectrode delivering the same charge, even though the underlying tissue excitability (rheobase, chronaxie) is unchanged. This reinforces that stimulation safety evaluation must be performed per-electrode-design rather than assumed to transfer across device form factors.
+
+The waveform analysis in Section~\ref{sec:waveforms} extends the tool beyond the algebraic model's rectangular-pulse limitation, and in doing so surfaces two practically relevant findings: that charge-balancing incurs no threshold penalty when the cathodic phase leads, and that phase ordering materially affects excitation efficiency. Both results are consistent with established stimulation physiology and with the design conventions of real devices, providing further evidence that the underlying models have been implemented correctly.
 
 \section{Conclusion}
 
@@ -158,6 +190,9 @@ G.\ Weiss, ``Sur la possibilit\'e de rendre comparables entre eux les appareils 
 
 \bibitem{lapicque1907}
 L.\ Lapicque, ``Recherches quantitatives sur l'excitation \'electrique des nerfs trait\'ee comme une polarisation,'' \textit{J.\ Physiol.\ Pathol.\ Gen.}, vol.\ 9, pp.\ 620--635, 1907.
+
+\bibitem{merrill2005}
+D.\,R.\ Merrill, M.\ Bikson, and J.\,G.\,R.\ Jefferys, ``Electrical stimulation of excitable tissue: design of efficacious and safe protocols,'' \textit{J.\ Neurosci.\ Methods}, vol.\ 141, no.\ 2, pp.\ 171--198, Feb.\ 2005.
 
 \end{thebibliography}
 
